@@ -9,9 +9,9 @@ void MaterialDetection::run() {
 	createBoolArray();
 }
 
-void MaterialDetection::drawLine(cv::Point p1, cv::Point p2)
+void MaterialDetection::drawLine(cv::Point p1, cv::Point p2, int r, int g, int b)
 {
-	line(dsrc, p1, p2, Scalar(0, 0, 255), 1, 8, 0);
+	line(dsrc, p1, p2, Scalar(b, g, r), 1, 8, 0);
 }
 
 void MaterialDetection::displayCentered()

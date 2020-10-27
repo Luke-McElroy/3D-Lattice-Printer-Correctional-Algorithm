@@ -117,7 +117,7 @@ void printAnalysis::calcXThickness() {
         line.length = abs(botYpoint - topYpoint);
         line.midpoint = (botYpoint + topYpoint) / 2;
 
-        lines.push_back(line);
+        drawColumns.push_back(line);
         
         left = left + res;
     }
@@ -142,16 +142,16 @@ void printAnalysis::calcXThickness() {
         thicknessXPoints.push_back(p2);
 
         Line line;
-        line.x1 = midpointX - left;
+        line.x1 = midpointX + right;
         line.y1 = topYpoint;
-        line.x2 = midpointX - left;
+        line.x2 = midpointX + right;
         line.y2 = botYpoint;
 
         //calc  line stuff
         line.length = abs(botYpoint - topYpoint);
         line.midpoint = (botYpoint + topYpoint) / 2;
 
-        lines.push_back(line);
+        drawColumns.push_back(line);
 
         right = right + res;
     }
@@ -185,6 +185,18 @@ void printAnalysis::calcYThickness() {
         thicknessYPoints.push_back(p1);
         thicknessYPoints.push_back(p2);
 
+        Line line;
+        line.x1 = leftXpoint;
+        line.y1 = midpointY - up;
+        line.x2 = rightXpoint;
+        line.y2 = midpointY - up;
+
+        //calc  line stuff
+        line.length = abs(leftXpoint - rightXpoint);
+        line.midpoint = (leftXpoint + rightXpoint) / 2;
+
+        drawRows.push_back(line);
+
         up = up + res;
     }
 
@@ -208,11 +220,24 @@ void printAnalysis::calcYThickness() {
         thicknessYPoints.push_back(p1);
         thicknessYPoints.push_back(p2);
 
+        Line line;
+        line.x1 = leftXpoint;
+        line.y1 = midpointY + down;
+        line.x2 = rightXpoint;
+        line.y2 = midpointY + down;
+
+        //calc  line stuff
+        line.length = abs(leftXpoint - rightXpoint);
+        line.midpoint = (leftXpoint + rightXpoint) / 2;
+
+        drawRows.push_back(line);
+
         down = down + res;
     }
 }
 
-double printAnalysis::calcMeanOfColumnLines(std::vector<Line>& vect) {
+
+double printAnalysis::calcMeanOfColumnLines(std::vector<XLine>& vect) {
     // calculates mean
     int sum = 0;
     sum = 0;
@@ -224,13 +249,171 @@ double printAnalysis::calcMeanOfColumnLines(std::vector<Line>& vect) {
     return meanNumLinesInCol;
 }
 
-double printAnalysis::calcStandardDeviation(std::vector<Line> &vect, double mean) {
+double printAnalysis::calcStandardDeviation(std::vector<XLine> &vect, double mean) {
     // get standard deviation from mean
     int sum = 0;
     for (int i = 0; i < vect.size(); ++i) {
         sum += pow((vect[i].numOfLinesInCol - mean), 2);
     }
-    double standarddeviation = sqrt(sum / (vect.size() - 1));
 
-    return standarddeviation;
+    int size = vect.size() - 1;
+    if (vect.size() - 1 < 1)
+        size = 1;
+
+    double standardDeviation = sqrt(sum / size);
+
+    return standardDeviation;
 }
+
+double printAnalysis::calcMeanOfRowLines(std::vector<YLine>& vect) {
+    // calculates mean
+    int sum = 0;
+    for (int i = 0; i < vect.size(); i++) {
+        sum += vect[i].numOfLinesInRow;
+    }
+    double meanNumLinesInRow = sum / vect.size();
+
+    return meanNumLinesInRow;
+}
+
+double printAnalysis::calcStandardDeviation(std::vector<YLine>& vect, double mean) {
+    // get standard deviation from mean
+    int sum = 0;
+    for (int i = 0; i < vect.size(); ++i) {
+        sum += pow((vect[i].numOfLinesInRow - mean), 2);
+    }
+
+    int size = vect.size() - 1;
+    if (vect.size() - 1 < 1)
+        size = 1;
+
+    double standardDeviation = sqrt(sum / size);
+
+    return standardDeviation;
+}
+
+void printAnalysis::xAlgorithm(std::vector<XLine> &columnsLines) {
+    // Mean of all line lengths in columns
+    int sum = 0;
+    for (int i = 0; i < columnsLines.size(); i++) {
+        sum += columnsLines[i].meanLength;
+    }
+    double meanOfAllCols = sum / columnsLines.size();
+    std::cout << "Mean of all Cols: " << meanOfAllCols << std::endl;
+
+
+    // ---------- Detect material Breakage ---------- \\
+
+    // Compares the mean length of each individual column with the mean of
+    // the overall mean of the columns to detect a breakage
+    int counter = 0;
+    for (int i = 0; i < columnsLines.size(); i++) {
+        for (int j = 0; j < columnsLines[i].length; j++) {
+            if (columnsLines[i].length < meanOfAllCols) {
+                counter++;
+            }
+        }
+        if (counter == columnsLines[i].numOfLinesInCol) {
+            std::cout << "Print failed - Line breakage detected" << std::endl;
+        }
+        counter = 0;
+    }
+
+    // TO DO - map to gui value
+    int GUINumLines = 5;
+    // if there are less columns than GUINumLines then there is a break
+    if (columnsLines.size() < GUINumLines) {
+        std::cout << "Print failed - Line breakage detected" << std::endl;
+    }
+
+    // ---------- Detect Thickness Variation ---------- \\
+
+    double meanOfColumnLines = calcMeanOfColumnLines(columnsLines);
+    double stdDeviationOfColumnLines = calcStandardDeviation(columnsLines, meanOfColumnLines);
+
+    // if the thickness of a line is greater than one standard deviation from the average (16%) - bad print
+    for (int i = 0; i < columnsLines.size(); i++)
+    {
+        if (columnsLines[i].numOfLinesInCol > meanOfColumnLines + stdDeviationOfColumnLines || columnsLines[i].numOfLinesInCol < meanOfColumnLines - stdDeviationOfColumnLines) {
+            std::cout << "false: the print thickness varies more than 1 standard deviation." << std::endl;
+        }
+    }
+}
+
+void printAnalysis::yAlgorithm(std::vector<YLine>& rowsLines) {
+    // Mean of all line lengths in columns
+    int sum = 0;
+    for (int i = 0; i < rowsLines.size(); i++) {
+        sum += rowsLines[i].meanLength;
+    }
+    double meanOfAllRows = sum / rowsLines.size();
+    std::cout << "Mean of all Rows: " << meanOfAllRows << std::endl;
+
+
+    // ---------- Detect material Breakage ---------- \\
+
+    // Compares the mean length of each individual column with the mean of
+    // the overall mean of the columns to detect a breakage
+    int counter = 0;
+    for (int i = 0; i < rowsLines.size(); i++) {
+        for (int j = 0; j < rowsLines[i].length; j++) {
+            if (rowsLines[i].length < meanOfAllRows) {
+                counter++;
+            }
+        }
+        if (counter == rowsLines[i].numOfLinesInRow) {
+            std::cout << "Print failed - Line breakage detected" << std::endl;
+        }
+        counter = 0;
+    }
+
+    // TO DO - map to gui value
+    int GUINumLines = 5;
+    // if there are less columns than GUINumLines then there is a break
+    if (rowsLines.size() < GUINumLines) {
+        std::cout << "Print failed - Line breakage detected" << std::endl;
+    }
+
+    // ---------- Detect Thickness Variation ---------- \\
+
+    double meanOfRowLines = calcMeanOfRowLines(rowsLines);
+    double stdDeviationOfRowLines = calcStandardDeviation(rowsLines, meanOfRowLines);
+
+    // if the thickness of a line is greater than one standard deviation from the average (16%) - bad print
+    for (int i = 0; i < rowsLines.size(); i++)
+    {
+        if (rowsLines[i].numOfLinesInRow > meanOfRowLines + stdDeviationOfRowLines || rowsLines[i].numOfLinesInRow < meanOfRowLines - stdDeviationOfRowLines) {
+            std::cout << "false: the print thickness varies more than 1 standard deviation." << std::endl;
+        }
+    }
+}
+
+// -------- Templating for when we are bored -------
+//template <class T>
+//T calcMeanOfLines(std::vector<T>& vect) {
+//    // calculates mean
+//    int sum = 0; 
+//    for (int i = 0; i < vect.size(); i++) {
+//        sum += vect[i].numoflinesincol;
+//    }
+//    double meannumlinesincol = sum / vect.size();
+//
+//    return meannumlinesincol;
+//}
+//
+//template <class T>
+//T getStandardDeviation(std::vector<T>& vect, double mean) {
+//    int sum = 0;
+//    for (int i = 0; i < vect.size(); ++i) {
+//        sum += pow((vect[i].numOfLinesInCol - mean), 2);
+//    }
+//
+//    int size = vect.size() - 1;
+//    if (vect.size() - 1 < 1)
+//        size = 1;
+//
+//    double standarddeviation = sqrt(sum / size);
+//
+//    return standarddeviation;
+//}
+

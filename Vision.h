@@ -18,7 +18,7 @@ private:
 	bool arr[640][480];
 	
 public:
-	void drawLine(cv::Point p1, cv::Point p2);
+	void drawLine(cv::Point p1, cv::Point p2, int r, int g, int b);
 	void displayCentered();
 	void setImg(std::string);
 	void setImg(cv::Mat);

@@ -12,8 +12,6 @@ void materialDetection(string s) {
     MaterialDetection md;
     md.setImg(s);
     md.run();
-
-    md.drawLine(cv::Point(50, 50), cv::Point(100, 100));
     md.displayCentered();
 
     md.displayBoolArr();
@@ -53,12 +51,11 @@ void cmd_change_img() {
     imgloc = "C:\\Users\\Suker\\Pictures\\microshots\\tricep\\" + s;
 }
 
-void printAnalysisAlgorithm()
-{
+void printAnalysisAlgorithm() {
     printAnalysis pa;
-
     MaterialDetection md;
-    md.setImg("C:\\Users\\Luke\\Downloads\\Project Resources\\u4.jpg");
+
+    md.setImg("C:\\Users\\Luke\\Downloads\\Project Resources\\badPrint.jpg");
     md.run();
 
     // create char array
@@ -74,116 +71,139 @@ void printAnalysisAlgorithm()
     }
 
     pa.calcLongestX();
-    md.drawLine(pa.p1, pa.p2);
+    md.drawLine(pa.p1, pa.p2, 0, 255, 0);
 
     pa.calcXThickness();
     for (int i = 0; i < pa.thicknessXPoints.size(); i++) {
-        md.drawLine(pa.thicknessXPoints[i], pa.thicknessXPoints[i + 1]);
+        md.drawLine(pa.thicknessXPoints[i], pa.thicknessXPoints[i + 1], 0, 255, 0);
         cout << "Top: " <<  pa.thicknessXPoints[i] << "\tBot: " << pa.thicknessXPoints[i + 1] << endl;
         i++;
     }
 
+    // ---------- X region ---------- \\
+
+    double xsum = 0, xmean = 0;
+    int i = 0, amountOfXLines = 0, colNum = 1;
+    std::vector<XLine> columnsLines;
+
     // mean of all lines
-    double sum = 0;
-    int i;
-    for (i = 0; i < pa.lines.size(); i++)
+    for (i = 0; i < pa.drawColumns.size(); i++)
     {
-        sum += pa.lines[i].length;
+        xsum += pa.drawColumns[i].length;
     }
-    double mean = sum / i;
-
-    std::vector<Line> columnsLines;
-
-    int amountOfLines = 0;
-    int colNum = 1;
+    xmean = xsum / i;
 
     // Populating the information about a column within in the columnsLines vector
-    for (int j = 0; j < pa.lines.size(); j++)
+    for (int j = 0; j < pa.drawColumns.size(); j++)
     {
-        if (pa.lines[j].length > mean) {
-            amountOfLines++;
+        if (pa.drawColumns[j].length > xmean) {
+            amountOfXLines++;
         }
-        if (amountOfLines > 0) {
-            if (pa.lines[j - 1].length > mean && pa.lines[j].length < mean) {
-                Line line;
-                line.numOfLinesInCol = amountOfLines;
-                line.columnNum = colNum;
-                
-                int meanSum = 0;
-                // Calculates the mean of lines within a certain column
-                for (int i = 0; i < amountOfLines; i++) {
-                    line.length = pa.lines[j - i].length;
-                    meanSum += pa.lines[j - i].length;
+        if (j == 0) {
+            // nothing
+        }
+        else
+        {
+            if (amountOfXLines > 0) {
+                std::cout << "j: " << j << std::endl;
+                if (pa.drawColumns[j - 1].length > xmean && pa.drawColumns[j].length < xmean) {
+                    XLine line;
+                    line.numOfLinesInCol = amountOfXLines;
+                    line.columnNum = colNum;
+                    line.x1 = pa.drawColumns[j].x1;
+                    line.y1 = pa.drawColumns[j].y1;
+                    line.x2 = pa.drawColumns[j].x2;
+                    line.y2 = pa.drawColumns[j].y2;
+                    int meanSum = 0;
+                    // Calculates the mean of lines within a certain column
+                    for (int i = 0; i < amountOfXLines; i++) {
+                        line.length = pa.drawColumns[j - i].length;
+                        meanSum += pa.drawColumns[j - i].length;
+                    }
+                    int meanLengthOfCol = meanSum / amountOfXLines;
+                    line.meanLength = meanLengthOfCol;
+                    columnsLines.push_back(line);
+
+                    amountOfXLines = 0;
+                    colNum++;
                 }
-                int meanLengthOfCol = meanSum / amountOfLines;
-                line.meanLength = meanLengthOfCol;
-                columnsLines.push_back(line);
-
-                amountOfLines = 0;
-                colNum++;
             }
         }
     }
 
-    // Mean of all line lengths in columns
-    sum = 0;
-    for (int i = 0; i < columnsLines.size(); i++) {
-        sum += columnsLines[i].meanLength;
-    }
-    double meanOfAllCols = sum / columnsLines.size();
-    std::cout << "Mean of all Cols: " << meanOfAllCols << std::endl;
+    pa.xAlgorithm(columnsLines);
 
-    // ---------- Detect material Breakage ---------- \\
+    columnsLines[0].printLine();
 
-    // Compares the mean length of each individual column with the mean of
-    // the overall mean of the columns to detect a breakage
-    int counter = 0;
-    for (int i = 0; i < columnsLines.size(); i++) {
-        for (int j = 0; j < columnsLines[i].length; j++) {
-            if (columnsLines[i].length < meanOfAllCols) {
-                counter++;
-            }
+    // ---------- Y region ---------- \\
+
+    double ysum = 0, ymean = 0;
+    int amountOfYLines = 0, rowNum = 1;
+    i = 0;
+    std::vector<YLine> rowsLines;
+
+    pa.calcLongestY();
+    md.drawLine(pa.p1, pa.p2, 255, 0, 0);
+
+    pa.calcYThickness();
+    for (int i = 0; i < pa.thicknessYPoints.size(); i++) {
+        // Account for the purge by only drawing the row lines up to the 
+        // first column which is the end of the purge
+        if (pa.thicknessYPoints[i].x < columnsLines[0].x1) {
+            pa.thicknessYPoints[i].x = columnsLines[0].x1;
+            md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
         }
-        if (counter == columnsLines[i].numOfLinesInCol) {
-            std::cout << "Print failed - Line breakage detected" << std::endl;
+        else {
+            md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
         }
-        counter = 0;
+        cout << "X: " << pa.thicknessYPoints[i] << "\tY: " << pa.thicknessYPoints[i + 1] << endl;
+        i++;
     }
 
-    // TO DO - map to gui value
-    int GUINumLines = 5;
-    // if there are less columns than GUINumLines then there is a break
-    if (columnsLines.size() < GUINumLines)
-        std::cout << "Print failed - Line breakage detected" << std::endl;
-
-    // ---------- Detect Thickness Variation ---------- \\
-
-    double meanOfColumnLines = pa.calcMeanOfColumnLines(columnsLines);
-    double stdDeviationOfColumnLines = pa.calcStandardDeviation(columnsLines, meanOfColumnLines);
-
-    // if the thickness of a line is greater than one standard deviation from the average (16%) - bad print
-    for (int i = 0; i < columnsLines.size(); i++)
+    // mean of all lines
+    for (i = 0; i < pa.drawRows.size(); i++)
     {
-        if (columnsLines[i].numOfLinesInCol > meanOfColumnLines + stdDeviationOfColumnLines || columnsLines[i].numOfLinesInCol < meanOfColumnLines - stdDeviationOfColumnLines) {
-            std::cout << "false: the print thickness varies more than 1 standard deviation." << std::endl;
+        ysum += pa.drawRows[i].length;
+    }
+    ymean = ysum / i;
+
+
+    // Populating the information about a column within in the columnsLines vector
+    for (int j = 0; j < pa.drawRows.size(); j++)
+    {
+        if (pa.drawRows[j].length > ymean) {
+            amountOfYLines++;
+        }
+        if (j == 0) {
+            // nothing
+        }
+        else {
+            if (amountOfYLines > 0) {
+                if (pa.drawRows[j - 1].length > ymean && pa.drawRows[j].length < ymean) {
+                    YLine line;
+                    line.numOfLinesInRow = amountOfYLines;
+                    line.rowNum = rowNum;
+                    line.x1 = pa.drawRows[j].x1;
+                    line.y1 = pa.drawRows[j].y1;
+                    line.x2 = pa.drawRows[j].x2;
+                    line.y2 = pa.drawRows[j].y2;
+                    int meanSum = 0;
+                    // Calculates the mean of lines within a certain column
+                    for (int i = 0; i < amountOfYLines; i++) {
+                        line.length = pa.drawRows[j - i].length;
+                        meanSum += pa.drawRows[j - i].length;
+                    }
+                    int meanLengthOfRow = meanSum / amountOfYLines;
+                    line.meanLength = meanLengthOfRow;
+                    rowsLines.push_back(line);
+                    amountOfYLines = 0;
+                    rowNum++;
+                }
+            }
         }
     }
 
-    // ---------- DO THE SAME IN THE Y AXIS ---------- \\
-
-    // remember that the purge will mess with the means and standard deviation
-
-    //pa.calcLongestY();
-    //md.drawLine(pa.p1, pa.p2);
-
-    //cout << "\n\ncalculating Y: " << endl << endl;
-
-    //pa.calcYThickness();
-    //for (int i = 0; i < pa.thicknessYPoints.size(); i++) {
-    //    md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1]);
-    //    //cout << "X: " << pa.thicknessXPoints[i] << "\tY: " << pa.thicknessXPoints[i + 1] << endl;
-    //    i++;
-    //}
+    pa.yAlgorithm(rowsLines);
 
     md.displayCentered();
     cv::waitKey(0);
