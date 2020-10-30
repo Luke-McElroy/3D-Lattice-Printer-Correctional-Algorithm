@@ -347,7 +347,6 @@ void printAnalysis::yAlgorithm(std::vector<YLine>& rowsLines) {
         sum += rowsLines[i].meanLength;
     }
     double meanOfAllRows = sum / rowsLines.size();
-    std::cout << "Mean of all Rows: " << meanOfAllRows << std::endl;
 
 
     // ---------- Detect material Breakage ---------- \\
