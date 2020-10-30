@@ -104,7 +104,13 @@ void printAnalysisAlgorithm() {
         else
         {
             if (amountOfXLines > 0) {
+                // Identifys a column
                 if (pa.drawColumns[j - 1].length > xmean && pa.drawColumns[j].length < xmean) {
+                    amountOfXLines = 0;
+                    colNum++;
+                }
+                // Line in a column
+                else if (pa.drawColumns[j].length > xmean) {
                     XLine line;
                     line.numOfLinesInCol = amountOfXLines;
                     line.columnNum = colNum;
@@ -112,21 +118,9 @@ void printAnalysisAlgorithm() {
                     line.y1 = pa.drawColumns[j].y1;
                     line.x2 = pa.drawColumns[j].x2;
                     line.y2 = pa.drawColumns[j].y2;
+                    line.length = pa.drawColumns[j].length;
 
-                    std::cout << "X value: " << line.x1 << std::endl;
-
-                    int meanSum = 0;
-                    // Calculates the mean of lines within a certain column
-                    for (int i = 0; i < amountOfXLines; i++) {
-                        line.length = pa.drawColumns[j - i].length;
-                        meanSum += pa.drawColumns[j - i].length;
-                    }
-                    int meanLengthOfCol = meanSum / amountOfXLines;
-                    line.meanLength = meanLengthOfCol;
                     columnsLines.push_back(line);
-
-                    amountOfXLines = 0;
-                    colNum++;
                 }
             }
         }
@@ -145,18 +139,6 @@ void printAnalysisAlgorithm() {
     md.drawLine(pa.p1, pa.p2, 255, 0, 0);
 
     pa.calcYThickness();
-    for (int i = 0; i < pa.thicknessYPoints.size(); i++) {
-        // Account for the purge by only drawing the row lines up to the 
-        // first column which is the end of the purge
-        if (pa.thicknessYPoints[i].x < columnsLines[0].x1) {
-            pa.thicknessYPoints[i].x = columnsLines[0].x1;
-            md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
-        }
-        else {
-            md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
-        }
-        i++;
-    }
 
     // mean of all lines
     for (i = 0; i < pa.drawRows.size(); i++)
@@ -174,11 +156,16 @@ void printAnalysisAlgorithm() {
         if (j == 0) {
             // nothing
         }
-        else {
-           
+        else
+        {
             if (amountOfYLines > 0) {
-                
+                // Identifys a row
                 if (pa.drawRows[j - 1].length > ymean && pa.drawRows[j].length < ymean) {
+                    amountOfYLines = 0;
+                    rowNum++;
+                }
+                // Line in a row
+                else if (pa.drawRows[j].length > ymean) {
                     YLine line;
                     line.numOfLinesInRow = amountOfYLines;
                     line.rowNum = rowNum;
@@ -186,56 +173,44 @@ void printAnalysisAlgorithm() {
                     line.y1 = pa.drawRows[j].y1;
                     line.x2 = pa.drawRows[j].x2;
                     line.y2 = pa.drawRows[j].y2;
-
-                    std::cout << "Y value: " << line.y1 << std::endl;
-
-                    int meanSum = 0;
-                    // Calculates the mean of lines within a certain column
-                    for (int i = 0; i < amountOfYLines; i++) {
-                        line.length = pa.drawRows[j - i].length;
-                        meanSum += pa.drawRows[j - i].length;
-                    }
-                    int meanLengthOfRow = meanSum / amountOfYLines;
-                    line.meanLength = meanLengthOfRow;
-
-                    //std::cout << "line length: " << line.length << std::endl;
+                    line.length = pa.drawRows[j].length;
 
                     rowsLines.push_back(line);
-                    amountOfYLines = 0;
-                    rowNum++;
                 }
             }
         }
     }
-    
-    //for (int i = 0; i < rowsLines.size(); i++)
-    //    rowsLines[0].printYLine();
 
-    // if there is a purge run until there is no material or it reaches the first column line
+ 
+    int lastRow = rowNum - 1;
+    for (int i = 0; i < rowsLines.size(); i++) {
+        cv::Point p1;
+        cv::Point p2;
 
-    ////THIS IS JUST THE FOR LOOP ABOVE, USED TO MAKE THE LINES IN THE FIRST ROW NOT GO PAST THE PURGE - IS IS SKETCHY
-    //for (int i = 0; i < pa.thicknessYPoints.size(); i++) {
-    //    // Account for the purge by only drawing the row lines up to the 
-    //    // first column which is the end of the purge
-    //    if (pa.thicknessYPoints[i].x < columnsLines[0].x1) {
-    //        pa.thicknessYPoints[i].x = columnsLines[0].x1;
-    //        md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
-    //    }
-    //    else {
-    //        md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
-    //    }
-    //    cout << "X: " << pa.thicknessYPoints[i] << "\tY: " << pa.thicknessYPoints[i + 1] << endl;
-    //    i++;
-    //}
+        if (rowsLines[i].rowNum != lastRow) {
+            p1.x = rowsLines[i].x1;
+            p1.y = rowsLines[i].y1;
+            p2.x = rowsLines[i].x2;
+            p2.y = rowsLines[i].y2;
 
-    std::cout << "num of lines in row: " << rowsLines[0].numOfLinesInRow << std::endl;
+            md.drawLine(p1, p2, 255, 0, 0);
+        }
+        // If the itterator is up to the last row, then stop the line at the x value
+        // of the first column
+        else if (rowsLines[i].x1 < columnsLines[0].x1 && rowsLines[i].rowNum == lastRow) {
+            
+            for (int j = 0; j < rowsLines[i].numOfLinesInRow ; j++) {
+                p1.x = columnsLines[0].x1;
+                p1.y = rowsLines[i].y1;
+                p2.x = rowsLines[i].x2;
+                p2.y = rowsLines[i].y2;
 
-    for (int i = 0; i < rowsLines[0].numOfLinesInRow; i++)
-    {
-        
-        if (pa.thicknessYPoints[i].x < columnsLines[0].x1) {
-            pa.thicknessYPoints[i].x = columnsLines[0].x1;
-            md.drawLine(pa.thicknessYPoints[i], pa.thicknessYPoints[i + 1], 0, 0, 255);
+                md.drawLine(p1, p2, 0, 0, 255);
+
+                // Overwrite the line in the rowsline to not extend past the first column
+                // test if this is right
+                rowsLines[i].x1 = columnsLines[0].x1;
+            }
         }
     }
 

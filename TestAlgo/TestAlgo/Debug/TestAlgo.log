@@ -1,0 +1,33 @@
+﻿  gCodeInterpreter.cpp
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\gCodeInterpreter.cpp(50,23): warning C4018: '<': signed/unsigned mismatch
+  printAnalysis.cpp
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(244,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(255,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(256,56): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(271,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(282,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(283,56): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(298,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(299,42): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(310,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(325,29): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(335,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(346,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(347,39): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(357,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(372,26): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\printAnalysis.cpp(382,23): warning C4018: '<': signed/unsigned mismatch
+  Source.cpp
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(77,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(89,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(96,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(122,64): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(148,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(162,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(169,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Source.cpp(196,61): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+  Vision.cpp
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Vision.cpp(132,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Luke\Desktop\TestAlgo\Project-Algorithm\Vision.cpp(133,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+opencv_world430d.lib(opencv_world430d.dll) : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'x86'
