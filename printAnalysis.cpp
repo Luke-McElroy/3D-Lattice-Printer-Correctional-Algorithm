@@ -159,27 +159,27 @@ void printAnalysis::calcYThickness() {
 
 double printAnalysis::calcMeanOfColumnLines(std::vector<XLine>& vect) {
     // calculates mean
-    int sum = 0;
-    sum = 0;
+    double sum = 0;
+    int size = 0;
     for (int i = 0; i < vect.size(); i++) {
         sum += vect[i].numOfLinesInCol;
+        i += vect[i].numOfLinesInCol;
+        size++;
     }
-    double meanNumLinesInCol = sum / vect.size();
+    double meanNumLinesInCol = sum / size;
 
     return meanNumLinesInCol;
 }
 
 double printAnalysis::calcStandardDeviation(std::vector<XLine> &vect, double mean) {
     // get standard deviation from mean
-    int sum = 0;
-    for (int i = 0; i < vect.size(); ++i) {
+    double sum = 0;
+    int size = 0;
+    for (int i = 0; i < vect.size(); i++) {
         sum += pow((vect[i].numOfLinesInCol - mean), 2);
+        i += vect[i].numOfLinesInCol;
+        size++;
     }
-
-    int size = vect.size() - 1;
-    if (vect.size() - 1 < 1)
-        size = 1;
-
     double standardDeviation = sqrt(sum / size);
 
     return standardDeviation;
@@ -187,26 +187,27 @@ double printAnalysis::calcStandardDeviation(std::vector<XLine> &vect, double mea
 
 double printAnalysis::calcMeanOfRowLines(std::vector<YLine>& vect) {
     // calculates mean
-    int sum = 0;
+    double sum = 0;
+    int size = 0;
     for (int i = 0; i < vect.size(); i++) {
         sum += vect[i].numOfLinesInRow;
+        i += vect[i].numOfLinesInRow;
+        size++;
     }
-    double meanNumLinesInRow = sum / vect.size();
+    double meanNumLinesInRow = sum / size;
 
     return meanNumLinesInRow;
 }
 
 double printAnalysis::calcStandardDeviation(std::vector<YLine>& vect, double mean) {
     // get standard deviation from mean
-    int sum = 0;
-    for (int i = 0; i < vect.size(); ++i) {
+    double sum = 0;
+    int size = 0;
+    for (int i = 0; i < vect.size(); i++) {
         sum += pow((vect[i].numOfLinesInRow - mean), 2);
+        i += vect[i].numOfLinesInRow;
+        size++;
     }
-
-    int size = vect.size() - 1;
-    if (vect.size() - 1 < 1)
-        size = 1;
-
     double standardDeviation = sqrt(sum / size);
 
     return standardDeviation;
@@ -239,9 +240,9 @@ void printAnalysis::xAlgorithm(std::vector<XLine> &columnsLines) {
     }
 
     // TO DO - map to gui value
-    int GUINumLines = 5;
+    int GUIXNumLines = 5;
     // if there are less columns than GUINumLines then there is a break
-    if (columnsLines.size() < GUINumLines) {
+    if (columnsLines[columnsLines.size() - 1].columnNum < GUIXNumLines) {
         std::cout << "Print failed - Line breakage detected" << std::endl;
     }
 
@@ -253,6 +254,10 @@ void printAnalysis::xAlgorithm(std::vector<XLine> &columnsLines) {
     // if the thickness of a line is greater than one standard deviation from the average (16%) - bad print
     for (int i = 0; i < columnsLines.size(); i++)
     {
+        std::cout << "The current columns number of lines " << columnsLines[i].numOfLinesInCol << std::endl;
+        std::cout << "The current columns mean " << meanOfColumnLines << std::endl;
+        std::cout << "The current columns stdDev " << stdDeviationOfColumnLines << std::endl;
+
         if (columnsLines[i].numOfLinesInCol > meanOfColumnLines + stdDeviationOfColumnLines || columnsLines[i].numOfLinesInCol < meanOfColumnLines - stdDeviationOfColumnLines) {
             std::cout << "false: the print thickness varies more than 1 standard deviation." << std::endl;
         }
@@ -286,9 +291,9 @@ void printAnalysis::yAlgorithm(std::vector<YLine>& rowsLines) {
     }
 
     // TO DO - map to gui value
-    int GUINumLines = 5;
+    int GUIYNumLines = 5;
     // if there are less columns than GUINumLines then there is a break
-    if (rowsLines.size() < GUINumLines) {
+    if (rowsLines[rowsLines.size() - 1].rowNum < GUIYNumLines) {
         std::cout << "Print failed - Line breakage detected" << std::endl;
     }
 
@@ -300,6 +305,10 @@ void printAnalysis::yAlgorithm(std::vector<YLine>& rowsLines) {
     // if the thickness of a line is greater than one standard deviation from the average (16%) - bad print
     for (int i = 0; i < rowsLines.size(); i++)
     {
+        std::cout << "The current columns number of lines " << rowsLines[i].numOfLinesInRow << std::endl;
+        std::cout << "The current columns mean " << meanOfRowLines << std::endl;
+        std::cout << "The current columns stdDev " << stdDeviationOfRowLines << std::endl;
+
         if (rowsLines[i].numOfLinesInRow > meanOfRowLines + stdDeviationOfRowLines || rowsLines[i].numOfLinesInRow < meanOfRowLines - stdDeviationOfRowLines) {
             std::cout << "false: the print thickness varies more than 1 standard deviation." << std::endl;
         }

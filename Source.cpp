@@ -55,7 +55,7 @@ void printAnalysisAlgorithm() {
     printAnalysis pa;
     MaterialDetection md;
 
-    md.setImg("C:\\Users\\Luke\\Downloads\\Project Resources\\u4.jpg");
+    md.setImg("C:\\Users\\Luke\\Downloads\\Project Resources\\perfectPrint640Purge.jpg");
     md.run();
 
     // create char array
@@ -106,13 +106,15 @@ void printAnalysisAlgorithm() {
             if (amountOfXLines > 0) {
                 // Identifys a column
                 if (pa.drawColumns[j - 1].length > xmean && pa.drawColumns[j].length < xmean) {
-                    amountOfXLines = 0;
                     colNum++;
+                    for (int i = 0; i < amountOfXLines; i++) {
+                        columnsLines[columnsLines.size() - 1  - i].numOfLinesInCol = amountOfXLines;
+                    }
+                    amountOfXLines = 0;
                 }
                 // Line in a column
                 else if (pa.drawColumns[j].length > xmean) {
                     XLine line;
-                    line.numOfLinesInCol = amountOfXLines;
                     line.columnNum = colNum;
                     line.x1 = pa.drawColumns[j].x1;
                     line.y1 = pa.drawColumns[j].y1;
@@ -125,6 +127,11 @@ void printAnalysisAlgorithm() {
             }
         }
     }
+
+    for (int i = 0; i < amountOfXLines; i++) {
+        columnsLines[columnsLines.size() - 1 - i].numOfLinesInCol = amountOfXLines;
+    }
+    amountOfXLines = 0;
 
     pa.xAlgorithm(columnsLines);
 
@@ -153,21 +160,41 @@ void printAnalysisAlgorithm() {
         if (pa.drawRows[j].length > ymean) {
             amountOfYLines++;
         }
-        if (j == 0) {
+        if (j == 0 && pa.drawRows[j].length > ymean) {
             // nothing
+
+            YLine line;
+            line.rowNum = rowNum;
+            line.x1 = pa.drawRows[j].x1;
+            line.y1 = pa.drawRows[j].y1;
+            line.x2 = pa.drawRows[j].x2;
+            line.y2 = pa.drawRows[j].y2;
+            line.length = pa.drawRows[j].length;
+
+            rowsLines.push_back(line);
         }
         else
         {
             if (amountOfYLines > 0) {
                 // Identifys a row
+
+                std::cout << "Amount of Y Lines " << amountOfYLines << std::endl;
+
                 if (pa.drawRows[j - 1].length > ymean && pa.drawRows[j].length < ymean) {
-                    amountOfYLines = 0;
                     rowNum++;
+
+                    std::cout << "Row Num " << rowNum << std::endl;
+
+                    // runs 11 times then fails
+                    for (int i = 0; i < amountOfYLines; i++) {
+                        rowsLines[rowsLines.size() - 1 - i].numOfLinesInRow = amountOfYLines;
+                        std::cout << "Number of Lines in Row" << rowsLines[rowsLines.size() - 1 - i].numOfLinesInRow << std::endl;
+                    }
+                    amountOfYLines = 0;
                 }
                 // Line in a row
                 else if (pa.drawRows[j].length > ymean) {
                     YLine line;
-                    line.numOfLinesInRow = amountOfYLines;
                     line.rowNum = rowNum;
                     line.x1 = pa.drawRows[j].x1;
                     line.y1 = pa.drawRows[j].y1;
@@ -181,8 +208,13 @@ void printAnalysisAlgorithm() {
         }
     }
 
+    for (int i = 0; i < amountOfYLines; i++) {
+        rowsLines[rowsLines.size() - 1 - i].numOfLinesInRow = amountOfYLines;
+    }
+    amountOfYLines = 0;
  
     int lastRow = rowNum - 1;
+
     for (int i = 0; i < rowsLines.size(); i++) {
         cv::Point p1;
         cv::Point p2;
@@ -213,8 +245,15 @@ void printAnalysisAlgorithm() {
             }
         }
     }
+    std::cout << "\n\n\n" << std::endl;
 
     pa.yAlgorithm(rowsLines);
+
+    //for (int i = 0; i < rowsLines.size(); i++) {
+    //    rowsLines[i].printYLine();
+    //}
+
+    
 
     md.displayCentered();
     cv::waitKey(0);
